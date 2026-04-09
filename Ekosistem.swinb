@@ -1,0 +1,124 @@
+<div class="notebook">
+
+<div class="nb-cell program" name="p1">
+% ================================================
+% KNOWLEDGE BASE: EKOSISTEM &amp; STRUKTUR POHON
+% Untuk SWI-Prolog
+% ================================================
+
+% ================================================
+% 1. FAKTA (Facts) - Relasi dasar
+% ================================================
+
+% --- Relasi ekosistem (dari diagram 1) ---
+% bagian_dari(Sub, Obj) : Sub adalah bagian dari Obj
+bagian_dari(hutan, ekosistem).
+bagian_dari(habitat, ekosistem).
+bagian_dari(manusia, ekosistem).
+bagian_dari(pohon, ekosistem).
+
+% --- Relasi fungsi/proses ---
+% menyerap(Sub, Obj) : Sub menyerap Obj
+menyerap(hutan, karbondioksida).
+
+% menghasilkan(Sub, Obj) : Sub menghasilkan Obj
+menghasilkan(pohon, oksigen).
+
+% membutuhkan(Sub, Obj) : Sub membutuhkan Obj
+membutuhkan(manusia, oksigen).
+membutuhkan(manusia, hutan).
+membutuhkan(manusia, habitat).
+
+% mempengaruhi(Sub, Obj) : Sub mempengaruhi Obj
+mempengaruhi(idim, ekosistem).
+mempengaruhi(matahami, ekosistem).
+
+% --- Relasi struktur pohon (dari diagram 2) ---
+% mendukung(Sub, Obj) : Sub mendukung Obj
+mendukung(tanah, pohon).
+mendukung(air, pohon).
+
+% memiliki(Sub, Obj) : Sub memiliki Obj
+memiliki(pohon, akar).
+memiliki(pohon, batang).
+memiliki(pohon, ranting).
+memiliki(pohon, daun).
+memiliki(pohon, buah).  % 'buang' dianggap sebagai 'buah'
+
+% menjabarkan(Sub, Obj) : Sub menjabarkan Obj (fungsi/penjelasan)
+menjabarkan(akar, menyerap_air).
+menjabarkan(akar, menyerap_unsur_hara).
+menjabarkan(batang, menopang_pohon).
+menjabarkan(batang, mengangkut_air).
+menjabarkan(daun, fotosintesis).
+
+
+% ================================================
+% 2. ATURAN (Rules) - Inferensi logika
+% ================================================
+
+% Aturan: X adalah bagian dari ekosistem jika X adalah bagian_dari(ekosistem)
+bagian_ekosistem(X) :- bagian_dari(X, ekosistem).
+
+% Aturan: X menghasilkan sesuatu untuk Y (jika Y membutuhkan hasil dari X)
+menyediakan(X, Y, Z) :-
+    menghasilkan(X, Z),
+    membutuhkan(Y, Z).
+
+% Aturan: X mendukung ekosistem jika X mendukung pohon
+mendukung_ekosistem(X) :- mendukung(X, pohon).
+
+% Aturan: Rantai kebutuhan (transitif)
+membutuhkan_transitif(A, C) :-
+    membutuhkan(A, B),
+    membutuhkan(B, C).
+
+% Aturan: Komponen pohon (apa saja yang dimiliki pohon)
+komponen_pohon(X) :- memiliki(pohon, X).
+
+% Aturan: Dua entitas berinteraksi jika salah satu mempengaruhi yang lain
+berinteraksi(X, Y) :- mempengaruhi(X, Y).
+berinteraksi(X, Y) :- mempengaruhi(Y, X).
+
+% Aturan: Ketergantungan manusia terhadap ekosistem
+manusia_bergantung :-
+    membutuhkan(manusia, oksigen),
+    membutuhkan(manusia, hutan),
+    membutuhkan(manusia, habitat).
+
+
+% ================================================
+% 3. PREDIKAT BANTU (Helper predicates)
+% ================================================
+
+% Menampilkan semua fakta tentang suatu entitas
+info(X) :-
+    format('~n=== Informasi tentang ~w ===~n', [X]),
+    (menghasilkan(X, Y) -&gt; format('Menghasilkan: ~w~n', [Y]) ; true),
+    (memiliki(X, Y) -&gt; format('Memiliki: ~w~n', [Y]) ; true),
+    (membutuhkan(X, Y) -&gt; format('Membutuhkan: ~w~n', [Y]) ; true),
+    (bagian_dari(X, Y) -&gt; format('Bagian dari: ~w~n', [Y]) ; true),
+    (mendukung(Y, X) -&gt; format('Didukung oleh: ~w~n', [Y]) ; true).
+
+% Menampilkan semua entitas dalam knowledge base
+semua_entitas :-
+    findall(X, (bagian_dari(X, _) ; menghasilkan(X, _) ; memiliki(X, _) ; membutuhkan(X, _)), L1),
+    sort(L1, Unique),
+    maplist(format('~w~n'), Unique).
+
+% Menampilkan relasi lengkap pohon
+struktur_pohon :-
+    format('~n=== Struktur Pohon ===~n'),
+    forall(memiliki(pohon, Bagian), format('- ~w~n', [Bagian])),
+    format('~n=== Pendukung Pohon ===~n'),
+    forall(mendukung(Pendukung, pohon), format('- ~w~n', [Pendukung])).
+
+
+
+</div>
+
+<div class="nb-cell query" name="q1">
+menghasilkan(pohon, X)
+</div>
+
+</div>
